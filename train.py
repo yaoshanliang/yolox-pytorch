@@ -69,12 +69,12 @@ if __name__ == "__main__":
     #   fp16        是否使用混合精度训练
     #               可减少约一半的显存、需要pytorch1.7.1以上
     #---------------------------------------------------------------------#
-    fp16            = False
+    fp16            = True
     #---------------------------------------------------------------------#
     #   classes_path    指向model_data下的txt，与自己训练的数据集相关 
     #                   训练前一定要修改classes_path，使其对应自己的数据集
     #---------------------------------------------------------------------#
-    classes_path    = 'model_data/voc_classes.txt'
+    classes_path    = 'model_data/USVTrack_classes.txt'
     #----------------------------------------------------------------------------------------------------------------------------#
     #   权值文件的下载请看README，可以通过网盘下载。模型的 预训练权重 对不同数据集是通用的，因为特征是通用的。
     #   模型的 预训练权重 比较重要的部分是 主干特征提取网络的权值部分，用于进行特征提取。
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     #      可以设置mosaic=True，直接随机初始化参数开始训练，但得到的效果仍然不如有预训练的情况。（像COCO这样的大数据集可以这样做）
     #   2、了解imagenet数据集，首先训练分类模型，获得网络的主干部分权值，分类模型的 主干部分 和该模型通用，基于此进行训练。
     #----------------------------------------------------------------------------------------------------------------------------#
-    model_path      = 'model_data/yolox_s.pth'
+    model_path      = ''
     #------------------------------------------------------#
     #   input_shape     输入的shape大小，一定要是32的倍数
     #------------------------------------------------------#
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     #------------------------------------------------------#
     #   所使用的YoloX的版本。nano、tiny、s、m、l、x
     #------------------------------------------------------#
-    phi             = 's'
+    phi             = 'nano'
     #------------------------------------------------------------------#
     #   mosaic              马赛克数据增强。
     #   mosaic_prob         每个step有多少概率使用mosaic数据增强，默认50%。
@@ -118,9 +118,9 @@ if __name__ == "__main__":
     #
     #   余弦退火算法的参数放到下面的lr_decay_type中设置
     #------------------------------------------------------------------#
-    mosaic              = True
+    mosaic              = False
     mosaic_prob         = 0.5
-    mixup               = True
+    mixup               = False
     mixup_prob          = 0.5
     special_aug_ratio   = 0.7
 
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     #------------------------------------------------------------------#
     Init_Epoch          = 0
     Freeze_Epoch        = 50
-    Freeze_batch_size   = 16
+    Freeze_batch_size   = 128
     #------------------------------------------------------------------#
     #   解冻阶段训练参数
     #   此时模型的主干不被冻结了，特征提取网络会发生改变
@@ -171,12 +171,12 @@ if __name__ == "__main__":
     #   Unfreeze_batch_size     模型在解冻后的batch_size
     #------------------------------------------------------------------#
     UnFreeze_Epoch      = 300
-    Unfreeze_batch_size = 8
+    Unfreeze_batch_size = 128
     #------------------------------------------------------------------#
     #   Freeze_Train    是否进行冻结训练
     #                   默认先冻结主干训练后解冻训练。
     #------------------------------------------------------------------#
-    Freeze_Train        = True
+    Freeze_Train        = False
     
     #------------------------------------------------------------------#
     #   其它训练参数：学习率、优化器、学习率下降有关
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     #------------------------------------------------------------------#
     #   save_period     多少个epoch保存一次权值
     #------------------------------------------------------------------#
-    save_period         = 10
+    save_period         = 20
     #------------------------------------------------------------------#
     #   save_dir        权值与日志文件保存的文件夹
     #------------------------------------------------------------------#
@@ -220,13 +220,13 @@ if __name__ == "__main__":
     #   （二）此处设置评估参数较为保守，目的是加快评估速度。
     #------------------------------------------------------------------#
     eval_flag           = True
-    eval_period         = 10
+    eval_period         = 20
     #------------------------------------------------------------------#
     #   num_workers     用于设置是否使用多线程读取数据
     #                   开启后会加快数据读取速度，但是会占用更多内存
     #                   内存较小的电脑可以设置为2或者0  
     #------------------------------------------------------------------#
-    num_workers         = 4
+    num_workers         = 12
 
     #----------------------------------------------------#
     #   获得图片路径和标签
@@ -444,7 +444,7 @@ if __name__ == "__main__":
         #   构建数据集加载器。
         #---------------------------------------#
         train_dataset   = YoloDataset(train_lines, input_shape, num_classes, epoch_length = UnFreeze_Epoch, \
-                                            mosaic=mosaic, mixup=mixup, mosaic_prob=mosaic_prob, mixup_prob=mixup_prob, train=True, special_aug_ratio=special_aug_ratio)
+                                            mosaic=mosaic, mixup=mixup, mosaic_prob=mosaic_prob, mixup_prob=mixup_prob, train=False, special_aug_ratio=special_aug_ratio)
         val_dataset     = YoloDataset(val_lines, input_shape, num_classes, epoch_length = UnFreeze_Epoch, \
                                             mosaic=False, mixup=False, mosaic_prob=0, mixup_prob=0, train=False, special_aug_ratio=0)
         
@@ -529,7 +529,7 @@ if __name__ == "__main__":
 
             set_optimizer_lr(optimizer, lr_scheduler_func, epoch)
 
-            fit_one_epoch(model_train, model, ema, yolo_loss, loss_history, eval_callback, optimizer, epoch, epoch_step, epoch_step_val, gen, gen_val, UnFreeze_Epoch, Cuda, fp16, scaler, save_period, save_dir, local_rank)
+            fit_one_epoch(model_train, model, ema, yolo_loss, loss_history, eval_callback, optimizer, epoch, epoch_step, epoch_step_val, gen, gen_val, UnFreeze_Epoch, Cuda, fp16, scaler, save_period, log_dir, local_rank)
                         
             if distributed:
                 dist.barrier()
