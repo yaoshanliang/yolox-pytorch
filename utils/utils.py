@@ -82,7 +82,15 @@ def show_config(**kwargs):
     print('-' * 70)
     print('|%25s | %40s|' % ('keys', 'values'))
     print('-' * 70)
+    text = ''
     for key, value in kwargs.items():
         print('|%25s | %40s|' % (str(key), str(value)))
+        text += str(key) + ': ' + str(value) + '\n'
     print('-' * 70)
+
+    if 'log_dir' in kwargs:
+        config_file = kwargs['log_dir'] + '/configurations.txt'
+        f = open(config_file, 'w')
+        f.write(text)
+        f.close()
     
