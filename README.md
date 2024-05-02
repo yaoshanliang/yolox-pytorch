@@ -1,3 +1,17 @@
+# Usage for USVTrack
+
+
+### Training
+```
+CUDA_VISIBLE_DEVICES=1 python train.py
+```
+
+### Evaluation
+```
+CUDA_VISIBLE_DEVICES=1 python train.py
+```
+
+
 ## YOLOX：You Only Look Once目标检测模型在Pytorch当中的实现
 ---
 
