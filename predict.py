@@ -21,7 +21,7 @@ if __name__ == "__main__":
     #   'heatmap'           表示进行预测结果的热力图可视化，详情查看下方注释。
     #   'export_onnx'       表示将模型导出为onnx，需要pytorch1.7.1以上。
     #----------------------------------------------------------------------------------------------------------#
-    mode = "predict"
+    mode = "fps"
     #-------------------------------------------------------------------------#
     #   crop                指定了是否在单张图片预测后对目标进行截取
     #   count               指定了是否进行目标的计数
@@ -139,9 +139,23 @@ if __name__ == "__main__":
         cv2.destroyAllWindows()
         
     elif mode == "fps":
-        img = Image.open(fps_image_path)
-        tact_time = yolo.get_FPS(img, test_interval)
-        print(str(tact_time) + ' seconds, ' + str(1/tact_time) + 'FPS, @batch_size 1')
+        import os
+        from random import sample
+        
+        fps_image_path  = "/gpfs/work/cpt/shanliangyao19/dataset/USVTrack/VOC2007/JPEGImages"
+        images = os.listdir(fps_image_path)
+        images = sample(images, 100)
+        print(images)
+        total = 0
+        for image in images:
+            img = Image.open(os.path.join(fps_image_path, image))
+            tact_time = yolo.get_FPS(img, test_interval)
+            print(str(tact_time) + ' seconds, ' + str(1/tact_time) + ' FPS, @batch_size 1')
+            total = total + tact_time
+
+        tact_time = total / len(images)
+        print('Total: ' + str(total) + ' seconds, Average: ' + str(tact_time) + ' seconds, ' + str(1/tact_time) + ' FPS, @batch_size 1')
+        
 
     elif mode == "dir_predict":
         import os
